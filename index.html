@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marcos Martins Advogados - Calculadora de Bônus</title>
+
+    <!-- Semantic UI CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css" />
+
+    <!-- Library JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/plentz/jquery-maskmoney@master/dist/jquery.maskMoney.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+
+    <!-- Semantic UI JS -->
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+
+    <style>
+        #title {
+            margin-top: 50px;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .margin-default {
+            margin: 30px 0 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="ui container" id="main">
+
+        <div class="ui grid">
+            <div class="ten wide column" id="title">
+                <h2 class="ui header">Calculadora de Bônus</h2>
+            </div>
+            <div class="six wide column">
+                <img class="ui medium rounded image" src="/assets/logo.png">
+            </div>
+        </div>
+
+
+        <form class="ui form">
+            <h4 class="ui dividing header">Área do Advogado</h4>
+            <div class="field">
+                <div class="two fields">
+                    <div class="field required">
+                        <label>Área de atuação</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" id="activity" onchange="validateDropdown(event)">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Selecione</div>
+                            <div class="menu">
+                                <div class="item" data-value="civel">Cível</div>
+                                <div class="item" data-value="societario">Societário</div>
+                                <div class="item" data-value="trabalhista">Trabalhista</div>
+                                <div class="item" data-value="tributario">Tributário</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field required">
+                        <label>Nível</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" id="level" onchange="validateDropdown(event)">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Selecione</div>
+                            <div class="menu">
+                                <div class="item" data-value="junior">Advogado Júnior</div>
+                                <div class="item" data-value="pleno">Advogado Pleno</div>
+                                <div class="item" data-value="senior">Advogado Senior</div>
+                                <div class="item" data-value="socio">Sócio Nível 1</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field labeled required">
+                        <label>Remuneração mensal (valor bruto)</label>
+                        <div class="ui labeled input">
+                            <div class="ui label">
+                                R$
+                            </div>
+                            <input type="text" id="sallary" placeholder="0,00" onkeydown="validateSallary(event)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui button" tabindex="0" onclick="calculate()">Calcular</div>
+        </form>
+
+        <div class="ui basic segment hide" id="result">
+            <div class="ui dimmer">
+                <div class="ui text loader">Carregando</div>
+            </div>
+
+            <h3 class="ui horizontal divider header">
+                Resultado
+            </h3>
+
+            <h4 class="ui dividing header">Metas Financeiras</h4>
+            <div class="ui basic segment">
+                <div class="ui column center aligned page grid">
+                    <div class="ui statistics">
+                        <div class="statistic">
+                            <div class="value" id="ebitdaMMA">
+                                %
+                            </div>
+                            <div class="label">
+                                EBITDA MMA
+                            </div>
+                        </div>
+                        <div class="statistic">
+                            <div class="value" id="ebitdaAREA">
+                                %
+                            </div>
+                            <div class="label">
+                                EBITDA ÁREA
+                            </div>
+                        </div>
+                        <div class="statistic">
+                            <div class="value" id="mloa">
+                                %
+                            </div>
+                            <div class="label">
+                                Margem Líquida Operacional Área
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="ui celled table margin-default" id="financialTarget">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Resultado Apurado</th>
+                            <th>Cálculo Faixa Desempenho
+                                <i class="blue info circle icon" data-variation="very wide"
+                                    data-content="Resultado Apurado * Faixa de Desempenho"></i>
+                            </th>
+                            <th>Desempenho Ponderado Pelo Peso do Indicador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+                <div class="ui column center aligned page grid">
+                    <div class="ui statistics">
+                        <div class="ui statistic">
+                            <div class="value" id="finalIndicatorFinancial">
+                                %
+                            </div>
+                            <div class="label">
+                                Final Ponderado por Peso Indicadores
+                            </div>
+                        </div>
+
+                        <div class="ui statistic">
+                            <div class="value" id="totalResultFinancial">
+                                R$
+                            </div>
+                            <div class="label">
+                                Total
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <h4 class="ui dividing header">Metas Estratégicas</h4>
+            <div class="ui basic segment">
+                <table class="ui celled table margin-default" id="nps">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Resultado Apurado</th>
+                            <th>Cálculo Faixa Desempenho
+                                <i class="blue info circle icon" data-variation="very wide"
+                                    data-content="Resultado Apurado * Faixa de Desempenho"></i>
+                            </th>
+                            <th>Desempenho Ponderado Pelo Peso do Indicador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+
+
+                <div class="ui column center aligned page grid">
+                    <div class="ui statistics">
+                        <div class="ui statistic">
+                            <div class="value" id="finalIndicatorStrategic">
+                                %
+                            </div>
+                            <div class="label">
+                                Final Ponderado por Peso Indicadores
+                            </div>
+                        </div>
+
+                        <div class="ui statistic">
+                            <div class="value" id="totalResultStrategic">
+                                R$
+                            </div>
+                            <div class="label">
+                                Total
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+
+        var nps = 0;
+        var tracksNps = [];
+        var weight = {};
+        var tracks = {};
+        var resultFound = {};
+        var activities = {};
+        var bonus = {};
+        var tracksStrategicTargetEbitda = [];
+        var tracksStrategicTargets = {};
+
+        $(document).ready(function () {
+            $('#sallary').maskMoney({ allowNegative: false, thousands: '.', decimal: ',' });
+            $('.ui.dropdown').dropdown();
+            $('.info.circle').popup();
+
+            _loadProperties();
+        });
+
+        async function _loadProperties() {
+            try {
+                const response = await fetch('config.yml');
+                const yamlText = await response.text();
+
+                const config = jsyaml.load(yamlText);
+
+                // TODO: Carregar de arquivo externo
+                console.log(config);
+
+                weight = {
+                    junior: {
+                        ebitdaMMA: 10,
+                        ebitdaAREA: 10,
+                        mloa: 10
+                    },
+                    pleno: {
+                        ebitdaMMA: 15,
+                        ebitdaAREA: 17.5,
+                        mloa: 17.5
+                    },
+                    senior: {
+                        ebitdaMMA: 20,
+                        ebitdaAREA: 30,
+                        mloa: 20
+                    },
+                    socio: {
+                        ebitdaMMA: 20,
+                        ebitdaAREA: 30,
+                        mloa: 20
+                    }
+                }
+
+                tracks = {
+                    junior: [
+                        { valor: 80, m: 150, h: -50 },
+                        { valor: 90, m: 150, h: -50 },
+                        { valor: 100, m: 200, h: -100 },
+                        { valor: 110, m: 200, h: -100 },
+                        { valor: 120, m: 0, h: 0 }
+                    ],
+                    pleno: [
+                        { valor: 80, m: 150, h: -50 },
+                        { valor: 90, m: 150, h: -50 },
+                        { valor: 100, m: 200, h: -100 },
+                        { valor: 110, m: 200, h: -100 },
+                        { valor: 120, m: 0, h: 0 }
+                    ],
+                    senior: [
+                        { valor: 80, m: 150, h: -50 },
+                        { valor: 90, m: 150, h: -50 },
+                        { valor: 100, m: 200, h: -100 },
+                        { valor: 110, m: 200, h: -100 },
+                        { valor: 120, m: 0, h: 0 }
+                    ],
+                    socio: [
+                        { valor: 80, m: 75, h: 2.50 },
+                        { valor: 90, m: 300, h: -200 },
+                        { valor: 100, m: 150, h: -50 },
+                        { valor: 110, m: 100, h: -5 },
+                        { valor: 120, m: 0, h: 0 }
+                    ]
+                };
+
+                resultFound = {
+                    ebitdaMMA: 100,
+                    ebitdaAREA: 100,
+                    mloa: 100 // Margem Liquida Operacional Área
+                };
+
+                activities = {
+                    civel: {
+                        ebitdaMMA: 100,
+                        ebitdaAREA: 100,
+                        mloa: 100
+                    },
+                    societario: {
+                        ebitdaMMA: 100,
+                        ebitdaAREA: 100,
+                        mloa: 100
+                    },
+                    tributario: {
+                        ebitdaMMA: 100,
+                        ebitdaAREA: 100,
+                        mloa: 100
+                    },
+                    trabalhista: {
+                        ebitdaMMA: 100,
+                        ebitdaAREA: 100,
+                        mloa: 100
+                    }
+                }
+
+                bonus = {
+                    junior: 3,
+                    pleno: 4,
+                    senior: 5,
+                    socio: 6
+                }
+
+                nps = {
+                    resultFound: 5,
+                    weight: 5
+                };
+
+                function _generateOtherValeus(array) {
+                    for (let i = 0; i < array.length; i++) {
+                        if (i == 4) break;
+                        array[i].m = (array[i].percent - array[i + 1].percent) / (array[i].valor - array[i + 1].valor);
+                        array[i].h = array[i].percent - (array[i].m * array[i].valor);
+                    }
+                }
+
+                tracksNps = [{ valor: 1, percent: 0 },
+                { valor: 2, percent: 5 },
+                { valor: 3, percent: 10 },
+                { valor: 4, percent: 50 },
+                { valor: 5, percent: 100 }];
+
+                _generateOtherValeus(tracksNps);
+
+                tracksStrategicTargetEbitda = [{ valor: 40, percent: 37.5 },
+                { valor: 50, percent: 47.5 },
+                { valor: 60, percent: 65 },
+                { valor: 80, percent: 75 },
+                { valor: 100, percent: 100 }];
+
+                _generateOtherValeus(tracksStrategicTargetEbitda);
+
+                tracksStrategicTargets = {
+                    junior: {
+                        evaluation: [{
+                            description: "Comunicação com o cliente",
+                            weight: 27.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Gestão de resposta ao cliente",
+                            weight: 27.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Construção de autoridade",
+                            weight: 10, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 0 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }],
+                    },
+                    pleno: {
+                        evaluation: [{
+                            description: "Gestão de resposta ao cliente",
+                            weight: 17.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Comunicação escrita",
+                            weight: 17.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Construção de autoridade",
+                            weight: 10, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 0 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }],
+                    },
+                    senior: {
+                        evaluation: [{
+                            description: "Inovação em soluções jurídicas",
+                            weight: 7.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Excelência no atendimento ao cliente e relacionamento",
+                            weight: 7.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Construção de autoridade",
+                            weight: 10, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 0 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }],
+                    },
+                    socio: {
+                        evaluation: [{
+                            description: "Contribuição técnica e Gestão da Qualidade",
+                            weight: 7.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Gestão de Pessoas e Desenvolvimento de Equipes",
+                            weight: 7.5, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 10 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }, {
+                            description: "Construção de autoridade",
+                            weight: 10, resultFound: 3,
+                            tracks: [
+                                { valor: 1, percent: 0 },
+                                { valor: 2, percent: 0 },
+                                { valor: 3, percent: 100 },
+                                { valor: 4, percent: 110 },
+                                { valor: 5, percent: 120 }
+                            ]
+                        }],
+                    }
+                }
+                const levels = $($("#level").parent().children()[3]).children().toArray().map(item => $(item).attr("data-value"));
+                levels.forEach(level => {
+                    tracksStrategicTargets[level].evaluation.forEach(evaluation => {
+                        _generateOtherValeus(evaluation.tracks);
+                    });
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar o arquivo YAML:', error);
+            }
+        }
+
+        function validateSallary(event) {
+            var input = event.target.value;
+            const regex = /^\$?(([1-9]\d{0,2}(.\d{3})*)|0)?\,\d{1,2}$/;
+            var field = $("#sallary");
+
+            if (!regex.test(input)) {
+                $(field).parent().parent().addClass("error");
+            } else {
+                $(field).parent().parent().removeClass("error");
+            }
+        }
+
+        function validateDropdown(event) {
+            const field = event.target;
+
+            if (event.target.value == "") {
+                $(field).parent().parent().addClass("error");
+            } else {
+                $(field).parent().parent().removeClass("error");
+            }
+        }
+
+        function validateFilledFields() {
+            let valid = true;
+
+            $(".field.required").each(function () {
+                const input = $(this).find("input[type='hidden'], input[type='text']");
+                const value = input.val()?.trim();
+
+                if (!value) {
+                    $(this).addClass("error");
+                    valid = false;
+                } else {
+                    $(this).removeClass("error");
+                }
+            });
+
+            if (!valid) {
+                alert("Preencha todos os campos obrigatórios.");
+            }
+
+            return valid;
+        }
+
+        function calculate() {
+            let isFormValid = validateFilledFields();
+
+            if (isFormValid) {
+                $('#result').removeClass('hide');
+                $('#result .dimmer').dimmer('show');
+
+                calculateFinancialTarget();
+                calculateStrategicTarget();
+
+                $('#result .dimmer').dimmer('hide');
+            }
+        }
+
+        function _calculateTrackRange(value, track) {
+            let result = 0;
+
+            for (let i = 0; i < track.length - 1; i++) {
+                const actualTrack = track[i];
+                const nextTrack = track[i + 1];
+
+                if (value >= actualTrack.valor && value <= nextTrack.valor) {
+                    result = actualTrack.m / 100 * value / 100 + actualTrack.h / 100;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        function _calculateNpsTrack(value, track) {
+            let result = 0;
+
+            for (let i = 0; i < track.length - 1; i++) {
+                const actualTrack = track[i];
+                const nextTrack = track[i + 1];
+
+                if (value >= actualTrack.valor && value <= nextTrack.valor) {
+                    result = actualTrack.m * value + actualTrack.h;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        function calculateFinancialTarget() {
+
+            $("#ebitdaMMA").html(`${resultFound.ebitdaMMA}%`);
+            $("#ebitdaAREA").html(`${resultFound.ebitdaAREA}%`);
+            $("#mloa").html(`${resultFound.mloa}%`);
+
+            const activity = $("#activity").val();
+            const level = $("#level").val();
+            const levelTrack = tracks[level];
+
+            const performance = {
+                ebitdaMMA: _calculateTrackRange(resultFound.ebitdaMMA, levelTrack),
+                ebitdaAREA: _calculateTrackRange(resultFound.ebitdaAREA, levelTrack),
+                mloa: _calculateTrackRange(resultFound.mloa, levelTrack)
+            }
+
+            const resultCalculated = {
+                ebitdaMMA: {
+                    resultFound: resultFound.ebitdaMMA,
+                    performanceRange: formatTotal(performance.ebitdaMMA),
+                    performanceIndicator: formatTotal(performance.ebitdaMMA * weight[level].ebitdaMMA / 100)
+                },
+                ebitdaAREA: {
+                    resultFound: resultFound.ebitdaAREA,
+                    performanceRange: formatTotal(performance.ebitdaAREA),
+                    performanceIndicator: formatTotal(performance.ebitdaAREA * weight[level].ebitdaAREA / 100),
+                },
+                mloa: {
+                    resultFound: resultFound.mloa,
+                    performanceRange: formatTotal(performance.mloa),
+                    performanceIndicator: formatTotal(performance.mloa * weight[level].mloa / 100)
+                }
+            }
+
+            $("#financialTarget tbody").html(
+                `<tr>
+                    <td>EBITDA MMA</td>
+                    <td>${resultCalculated.ebitdaMMA.resultFound}%</td>
+                    <td>${resultCalculated.ebitdaMMA.performanceRange}%</td>
+                    <td>${resultCalculated.ebitdaMMA.performanceIndicator}%</td>
+                </tr>
+                <tr>
+                    <td>EBITDA ÁREA </td>
+                    <td>${resultCalculated.ebitdaAREA.resultFound}%</td>
+                    <td>${resultCalculated.ebitdaAREA.performanceRange}%</td>
+                    <td>${resultCalculated.ebitdaAREA.performanceIndicator}%</td>
+                </tr>
+                <tr>
+                    <td>Margem Líquida Operacional Área</td>
+                    <td>${resultCalculated.mloa.resultFound}%</td>
+                    <td>${resultCalculated.mloa.performanceRange}%</td>
+                    <td>${resultCalculated.mloa.performanceIndicator}%</td>
+                </tr>`);
+
+            const total = (resultCalculated.ebitdaMMA.performanceIndicator * 1 +
+                resultCalculated.ebitdaAREA.performanceIndicator * 1 +
+                resultCalculated.mloa.performanceIndicator * 1) / 100;
+            $("#finalIndicatorFinancial").html(`${formatTotal(total)}%`);
+
+            const sallary = parseFloat($("#sallary").val().replace(/\./g, '').replace(',', '.'));
+            const bonusValue = bonus[level];
+            const totalResult = total * sallary * bonusValue;
+            $("#totalResultFinancial").html(`R$ ${totalResult}`);
+
+        }
+
+        function calculateStrategicTarget() {
+
+            let totalNps = _calculateNpsTrack(nps.resultFound, tracksNps);
+
+            const resultEbitda = _calculateNpsTrack(resultFound.ebitdaMMA, tracksStrategicTargetEbitda);
+
+            var tbody = $("#nps tbody");
+            $(tbody).html(`
+            <tr>
+                <td>Nível EBITDA</td>
+                <td>${resultFound.ebitdaMMA}%</td>
+                <td>${resultEbitda}%</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>NPS Escritório</td>
+                <td>${nps.resultFound}%</td>
+                <td>${totalNps}%</td>
+                <td>${(totalNps * nps.weight) / 100}%</td>
+            </tr>`);
+
+            let evaluationsByLevel = tracksStrategicTargets[$("#level").val()].evaluation;
+
+            let total = nps.resultFound;
+            evaluationsByLevel.forEach(evaluation => {
+                const resultFound = evaluation.resultFound;
+                const performanceRange = _calculateNpsTrack(resultFound, evaluation.tracks);
+                const performanceIndicator = (performanceRange * evaluation.weight) / 100;
+
+                total += performanceIndicator
+
+                $(tbody).append(`
+                <tr>
+                    <td>${evaluation.description}</td>
+                    <td>${resultFound}</td>
+                    <td>${performanceRange}%</td>
+                    <td>${performanceIndicator}%</td>
+                </tr>`);
+            });
+
+            $("#finalIndicatorStrategic").html(`${total}%`);
+
+            const sallary = parseFloat($("#sallary").val().replace(/\./g, '').replace(',', '.'));
+            const level = $("#level").val();
+            const bonusValue = bonus[level];
+
+            const totalResult = sallary * bonusValue * resultEbitda / 100 * total / 100;
+            $("#totalResultStrategic").html(`R$ ${totalResult}`);
+
+        }
+
+        function formatTotal(value) {
+            return (value * 100).toFixed(2);
+        }
+
+    </script>
+</body>
+
+</html>
