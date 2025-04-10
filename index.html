@@ -41,15 +41,24 @@
                 <h2 class="ui header">Calculadora de Bônus</h2>
             </div>
             <div class="six wide column">
-                <img class="ui medium rounded image" src="/assets/logo.png">
+                <img class="ui medium rounded image" src="./assets/logo.png">
             </div>
         </div>
-
 
         <form class="ui form">
             <h4 class="ui dividing header">Área do Advogado</h4>
             <div class="field">
-                <div class="two fields">
+                <div class="three fields">
+                    <div class="field labeled required">
+                        <label>Remuneração mensal (valor bruto)</label>
+                        <div class="ui labeled input">
+                            <div class="ui label">
+                                R$
+                            </div>
+                            <input type="text" id="sallary" placeholder="0,00" onkeydown="validateSallary(event)">
+                        </div>
+                    </div>
+
                     <div class="field required">
                         <label>Área de atuação</label>
                         <div class="ui selection dropdown">
@@ -68,7 +77,7 @@
                     <div class="field required">
                         <label>Nível</label>
                         <div class="ui selection dropdown">
-                            <input type="hidden" id="level" onchange="validateDropdown(event)">
+                            <input type="hidden" id="level" onchange="validateDropdown(event); loadFieldsEvaluation()">
                             <i class="dropdown icon"></i>
                             <div class="default text">Selecione</div>
                             <div class="menu">
@@ -79,14 +88,54 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="field labeled required">
-                        <label>Remuneração mensal (valor bruto)</label>
-                        <div class="ui labeled input">
-                            <div class="ui label">
-                                R$
+                <div class="three fields">
+                    <div class="field labeled required disabled">
+                        <label id="evaluation1">Avaliação 1</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" id="evaluation1_value" onchange="validateDropdown(event);">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Selecione</div>
+                            <div class="menu">
+                                <div class="item" data-value="1">1</div>
+                                <div class="item" data-value="2">2</div>
+                                <div class="item" data-value="3">3</div>
+                                <div class="item" data-value="4">4</div>
+                                <div class="item" data-value="5">5</div>
                             </div>
-                            <input type="text" id="sallary" placeholder="0,00" onkeydown="validateSallary(event)">
+                        </div>
+                    </div>
+
+                    <div class="field labeled required disabled">
+                        <label id="evaluation2">Avaliação 2</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" id="evaluation2_value" onchange="validateDropdown(event);">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Selecione</div>
+                            <div class="menu">
+                                <div class="item" data-value="1">1</div>
+                                <div class="item" data-value="2">2</div>
+                                <div class="item" data-value="3">3</div>
+                                <div class="item" data-value="4">4</div>
+                                <div class="item" data-value="5">5</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field labeled required disabled">
+                        <label id="evaluation3">Avaliação 3</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" id="evaluation3_value" onchange="validateDropdown(event);">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Selecione</div>
+                            <div class="menu">
+                                <div class="item" data-value="1">1</div>
+                                <div class="item" data-value="2">2</div>
+                                <div class="item" data-value="3">3</div>
+                                <div class="item" data-value="4">4</div>
+                                <div class="item" data-value="5">5</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -169,10 +218,8 @@
                                 Total
                             </div>
                         </div>
-
                     </div>
                 </div>
-
             </div>
 
             <h4 class="ui dividing header">Metas Estratégicas</h4>
@@ -192,8 +239,6 @@
                     <tbody>
                     </tbody>
                 </table>
-
-
 
                 <div class="ui column center aligned page grid">
                     <div class="ui statistics">
@@ -215,6 +260,17 @@
                             </div>
                         </div>
 
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui column center aligned page grid margin-default">
+                <div class="ui large statistic">
+                    <div class="value" id="finalBonus">
+                        R$
+                    </div>
+                    <div class="label">
+                        Valor total de Bônus
                     </div>
                 </div>
             </div>
@@ -250,7 +306,7 @@
                 const config = jsyaml.load(yamlText);
 
                 // TODO: Carregar de arquivo externo
-                console.log(config);
+                console.log("load file", config);
 
                 weight = {
                     junior: {
@@ -346,14 +402,6 @@
                     resultFound: 5,
                     weight: 5
                 };
-
-                function _generateOtherValeus(array) {
-                    for (let i = 0; i < array.length; i++) {
-                        if (i == 4) break;
-                        array[i].m = (array[i].percent - array[i + 1].percent) / (array[i].valor - array[i + 1].valor);
-                        array[i].h = array[i].percent - (array[i].m * array[i].valor);
-                    }
-                }
 
                 tracksNps = [{ valor: 1, percent: 0 },
                 { valor: 2, percent: 5 },
@@ -505,15 +553,17 @@
                         }],
                     }
                 }
-                const levels = $($("#level").parent().children()[3]).children().toArray().map(item => $(item).attr("data-value"));
-                levels.forEach(level => {
-                    tracksStrategicTargets[level].evaluation.forEach(evaluation => {
-                        _generateOtherValeus(evaluation.tracks);
-                    });
-                });
 
             } catch (error) {
                 console.error('Erro ao carregar o arquivo YAML:', error);
+            }
+        }
+
+        function _generateOtherValeus(array) {
+            for (let i = 0; i < array.length; i++) {
+                if (i == 4) break;
+                array[i].m = (array[i].percent - array[i + 1].percent) / (array[i].valor - array[i + 1].valor);
+                array[i].h = array[i].percent - (array[i].m * array[i].valor);
             }
         }
 
@@ -537,6 +587,24 @@
             } else {
                 $(field).parent().parent().removeClass("error");
             }
+        }
+
+        function loadFieldsEvaluation() {
+
+            if ($("#level").val() != "") {
+                const activity = $("#activity").val();
+                const level = $("#level").val();
+                const levelTrack = tracks[level];
+
+                let evaluations = tracksStrategicTargets[level].evaluation;
+
+                $("#evaluation1").text(evaluations[0].description);
+                $("#evaluation2").text(evaluations[1].description);
+                $("#evaluation3").text(evaluations[2].description);
+
+                $(".field.required.disabled").removeClass("disabled");
+            }
+
         }
 
         function validateFilledFields() {
@@ -568,8 +636,9 @@
                 $('#result').removeClass('hide');
                 $('#result .dimmer').dimmer('show');
 
-                calculateFinancialTarget();
-                calculateStrategicTarget();
+                let finalBonus = calculateFinancialTarget();
+                finalBonus += calculateStrategicTarget();
+                $("#finalBonus").html(formatCurrency(finalBonus));
 
                 $('#result .dimmer').dimmer('hide');
             }
@@ -669,8 +738,9 @@
             const sallary = parseFloat($("#sallary").val().replace(/\./g, '').replace(',', '.'));
             const bonusValue = bonus[level];
             const totalResult = total * sallary * bonusValue;
-            $("#totalResultFinancial").html(`R$ ${totalResult}`);
+            $("#totalResultFinancial").html(formatCurrency(totalResult));
 
+            return totalResult;
         }
 
         function calculateStrategicTarget() {
@@ -694,6 +764,18 @@
                 <td>${(totalNps * nps.weight) / 100}%</td>
             </tr>`);
 
+            const level = $("#level").val();
+            tracksStrategicTargets[level].evaluation[0].resultFound = parseInt($("#evaluation1_value").val());
+            tracksStrategicTargets[level].evaluation[1].resultFound = parseInt($("#evaluation2_value").val());
+            tracksStrategicTargets[level].evaluation[2].resultFound = parseInt($("#evaluation3_value").val());
+
+            const levels = $($("#level").parent().children()[3]).children().toArray().map(item => $(item).attr("data-value"));
+            levels.forEach(level => {
+                tracksStrategicTargets[level].evaluation.forEach(evaluation => {
+                    _generateOtherValeus(evaluation.tracks);
+                });
+            });
+
             let evaluationsByLevel = tracksStrategicTargets[$("#level").val()].evaluation;
 
             let total = nps.resultFound;
@@ -716,16 +798,20 @@
             $("#finalIndicatorStrategic").html(`${total}%`);
 
             const sallary = parseFloat($("#sallary").val().replace(/\./g, '').replace(',', '.'));
-            const level = $("#level").val();
             const bonusValue = bonus[level];
 
             const totalResult = sallary * bonusValue * resultEbitda / 100 * total / 100;
-            $("#totalResultStrategic").html(`R$ ${totalResult}`);
+            $("#totalResultStrategic").html(formatCurrency(totalResult));
 
+            return totalResult;
         }
 
         function formatTotal(value) {
             return (value * 100).toFixed(2);
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
     </script>
