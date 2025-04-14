@@ -161,7 +161,6 @@
             try {
                 const responseTarget = await fetch('config-target.yml');
                 configTarget = jsyaml.load(await responseTarget.text());
-                console.log(configTarget);
 
                 _buildForm();
 

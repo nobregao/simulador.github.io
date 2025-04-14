@@ -311,8 +311,6 @@
             try {
                 const responseTarget = await fetch('admin/config-target.yml');
                 configTarget = jsyaml.load(await responseTarget.text());
-                console.log({ configTarget });
-                _init();
             } catch (error) {
                 alert("Erro ao carregar o arquivo de configuração");
                 console.error('Erro ao carregar o arquivo de configuração:', error);

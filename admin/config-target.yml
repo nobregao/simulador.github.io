@@ -1,46 +1,43 @@
 target:
   department:
     civel:
-      key: "Civel"
-      name: "Cível"
+      key: civel
+      name: Cível
       resultFound:
         ebitdaAREA: 100
         mloa: 100
     societario:
-      key: "Societario"
-      name: "Societário"
+      key: societario
+      name: Societário
       resultFound:
         ebitdaAREA: 100
         mloa: 100
     tributario:
-      key: "Tributario"
-      name: "Tributário"
+      key: tributario
+      name: Tributário
       resultFound:
         ebitdaAREA: 100
         mloa: 100
     trabalhista:
-      key: "Trabalhista"
-      name: "Trabalhista"
+      key: trabalhista
+      name: Trabalhista
       resultFound:
         ebitdaAREA: 100
         mloa: 100
-
   levels:
-    - key: "Junior"
-      name: "Júnior"
-    - key: "Pleno"
-      name: "Pleno"
-    - key: "Senior"
-      name: "Sênior"
-    - key: "Socio"
-      name: "Sócio 1"
-
+    - key: junior
+      name: Júnior
+    - key: pleno
+      name: Pleno
+    - key: senior
+      name: Sênior
+    - key: socio
+      name: Sócio 1
   bonus:
     junior: 3
     pleno: 4
     senior: 5
     socio: 6
-
   financial:
     junior:
       resultFound:
@@ -121,7 +118,7 @@ target:
       tracks:
         - value: 80
           m: 75
-          h: 2.50
+          h: 2.5
         - value: 90
           m: 300
           h: -200
@@ -134,7 +131,6 @@ target:
         - value: 120
           m: 0
           h: 0
-
   strategic:
     nps:
       resultFound: 5
@@ -164,7 +160,7 @@ target:
           - value: 100
             percent: 100
         evaluations:
-          - description: "Comunicação com o cliente"
+          - description: Comunicação com o cliente
             weight: 27.5
             tracks:
               - value: 1
@@ -177,7 +173,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Gestão de resposta ao cliente"
+          - description: Gestão de resposta ao cliente
             weight: 27.5
             tracks:
               - value: 1
@@ -190,7 +186,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Construção de autoridade"
+          - description: Construção de autoridade
             weight: 10
             tracks:
               - value: 1
@@ -216,7 +212,7 @@ target:
           - value: 100
             percent: 100
         evaluations:
-          - description: "Gestão de resposta ao cliente"
+          - description: Gestão de resposta ao cliente
             weight: 17.5
             tracks:
               - value: 1
@@ -229,7 +225,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Comunicação escrita"
+          - description: Comunicação escrita
             weight: 17.5
             tracks:
               - value: 1
@@ -242,7 +238,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Construção de autoridade"
+          - description: Construção de autoridade
             weight: 10
             tracks:
               - value: 1
@@ -268,7 +264,7 @@ target:
           - value: 100
             percent: 100
         evaluations:
-          - description: "Inovação em soluções jurídicas"
+          - description: Inovação em soluções jurídicas
             weight: 7.5
             tracks:
               - value: 1
@@ -281,7 +277,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Excelência no atendimento ao cliente e relacionamento"
+          - description: Excelência no atendimento ao cliente e relacionamento
             weight: 7.5
             tracks:
               - value: 1
@@ -294,7 +290,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Construção de autoridade"
+          - description: Construção de autoridade
             weight: 10
             tracks:
               - value: 1
@@ -320,7 +316,7 @@ target:
           - value: 100
             percent: 100
         evaluations:
-          - description: "Contribuição técnica e Gestão da Qualidade"
+          - description: Contribuição técnica e Gestão da Qualidade
             weight: 7.5
             tracks:
               - value: 1
@@ -333,7 +329,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Gestão de Pessoas e Desenvolvimento de Equipes"
+          - description: Gestão de Pessoas e Desenvolvimento de Equipes
             weight: 7.5
             tracks:
               - value: 1
@@ -346,7 +342,7 @@ target:
                 percent: 110
               - value: 5
                 percent: 120
-          - description: "Construção de autoridade"
+          - description: Construção de autoridade
             weight: 10
             tracks:
               - value: 1
