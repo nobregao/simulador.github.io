@@ -1,0 +1,361 @@
+target:
+  department:
+    civel:
+      key: "Civel"
+      name: "Cível"
+      resultFound:
+        ebitdaAREA: 100
+        mloa: 100
+    societario:
+      key: "Societario"
+      name: "Societário"
+      resultFound:
+        ebitdaAREA: 100
+        mloa: 100
+    tributario:
+      key: "Tributario"
+      name: "Tributário"
+      resultFound:
+        ebitdaAREA: 100
+        mloa: 100
+    trabalhista:
+      key: "Trabalhista"
+      name: "Trabalhista"
+      resultFound:
+        ebitdaAREA: 100
+        mloa: 100
+
+  levels:
+    - key: "Junior"
+      name: "Júnior"
+    - key: "Pleno"
+      name: "Pleno"
+    - key: "Senior"
+      name: "Sênior"
+    - key: "Socio"
+      name: "Sócio 1"
+
+  bonus:
+    junior: 3
+    pleno: 4
+    senior: 5
+    socio: 6
+
+  financial:
+    junior:
+      resultFound:
+        ebitdaMMA: 100
+      weight:
+        ebitdaMMA: 10
+        ebitdaAREA: 10
+        mloa: 10
+      tracks:
+        - value: 80
+          m: 150
+          h: -50
+        - value: 90
+          m: 150
+          h: -50
+        - value: 100
+          m: 200
+          h: -100
+        - value: 110
+          m: 200
+          h: -100
+        - value: 120
+          m: 0
+          h: 0
+    pleno:
+      resultFound:
+        ebitdaMMA: 100
+      weight:
+        ebitdaMMA: 15
+        ebitdaAREA: 17.5
+        mloa: 17.5
+      tracks:
+        - value: 80
+          m: 150
+          h: -50
+        - value: 90
+          m: 150
+          h: -50
+        - value: 100
+          m: 200
+          h: -100
+        - value: 110
+          m: 200
+          h: -100
+        - value: 120
+          m: 0
+          h: 0
+    senior:
+      resultFound:
+        ebitdaMMA: 100
+      weight:
+        ebitdaMMA: 20
+        ebitdaAREA: 30
+        mloa: 20
+      tracks:
+        - value: 80
+          m: 150
+          h: -50
+        - value: 90
+          m: 150
+          h: -50
+        - value: 100
+          m: 200
+          h: -100
+        - value: 110
+          m: 200
+          h: -100
+        - value: 120
+          m: 0
+          h: 0
+    socio:
+      resultFound:
+        ebitdaMMA: 100
+      weight:
+        ebitdaMMA: 20
+        ebitdaAREA: 30
+        mloa: 20
+      tracks:
+        - value: 80
+          m: 75
+          h: 2.50
+        - value: 90
+          m: 300
+          h: -200
+        - value: 100
+          m: 150
+          h: -50
+        - value: 110
+          m: 100
+          h: 5
+        - value: 120
+          m: 0
+          h: 0
+
+  strategic:
+    nps:
+      resultFound: 5
+      weight: 5
+      tracks:
+        - value: 1
+          percent: 0
+        - value: 2
+          percent: 5
+        - value: 3
+          percent: 10
+        - value: 4
+          percent: 50
+        - value: 5
+          percent: 100
+    level:
+      junior:
+        ebitda:
+          - value: 40
+            percent: 37.5
+          - value: 50
+            percent: 47.5
+          - value: 60
+            percent: 65
+          - value: 80
+            percent: 75
+          - value: 100
+            percent: 100
+        evaluations:
+          - description: "Comunicação com o cliente"
+            weight: 27.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Gestão de resposta ao cliente"
+            weight: 27.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Construção de autoridade"
+            weight: 10
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 0
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+      pleno:
+        ebitda:
+          - value: 40
+            percent: 37.5
+          - value: 50
+            percent: 47.5
+          - value: 60
+            percent: 65
+          - value: 80
+            percent: 75
+          - value: 100
+            percent: 100
+        evaluations:
+          - description: "Gestão de resposta ao cliente"
+            weight: 17.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Comunicação escrita"
+            weight: 17.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Construção de autoridade"
+            weight: 10
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 0
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+      senior:
+        ebitda:
+          - value: 40
+            percent: 37.5
+          - value: 50
+            percent: 47.5
+          - value: 60
+            percent: 65
+          - value: 80
+            percent: 75
+          - value: 100
+            percent: 100
+        evaluations:
+          - description: "Inovação em soluções jurídicas"
+            weight: 7.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Excelência no atendimento ao cliente e relacionamento"
+            weight: 7.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Construção de autoridade"
+            weight: 10
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 0
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+      socio:
+        ebitda:
+          - value: 40
+            percent: 37.5
+          - value: 50
+            percent: 47.5
+          - value: 60
+            percent: 65
+          - value: 85
+            percent: 75
+          - value: 100
+            percent: 100
+        evaluations:
+          - description: "Contribuição técnica e Gestão da Qualidade"
+            weight: 7.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Gestão de Pessoas e Desenvolvimento de Equipes"
+            weight: 7.5
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 10
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120
+          - description: "Construção de autoridade"
+            weight: 10
+            tracks:
+              - value: 1
+                percent: 0
+              - value: 2
+                percent: 0
+              - value: 3
+                percent: 100
+              - value: 4
+                percent: 110
+              - value: 5
+                percent: 120

@@ -1,0 +1,6 @@
+{
+    "yaml.schemas": {
+        "https://www.artillery.io/schema.json": [],
+        "https://json.schemastore.org/yamllint.json": "file:///Users/renatao/Downloads/suzy%20-%20calculadora%20bonus/admin/config-target.yml"
+    }
+}

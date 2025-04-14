@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Calculadora de Bônus</title>
+
+    <!-- Semantic UI CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css" />
+
+    <!-- Library JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/plentz/jquery-maskmoney@master/dist/jquery.maskMoney.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+
+    <!-- Semantic UI JS -->
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+
+    <style>
+        #title {
+            margin-top: 50px;
+        }
+
+        .margin-default {
+            margin: 30px 0 !important;
+        }
+
+        .compact-input .input {
+            width: 85px !important
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="ui container" id="main">
+
+        <div class="ui grid">
+            <div class="ten wide column" id="title">
+                <h2 class="ui header">Admin - Calculadora de Bônus</h2>
+            </div>
+            <div class="six wide column">
+                <img class="ui medium rounded image" src="./../assets/logo.png">
+            </div>
+        </div>
+
+        <form class="ui form">
+            <div class="ui grid">
+                <div class="ten wide column">
+                    <h3 class="ui dividing header">Departamentos: Resultado Apurado</h3>
+                    <table class="ui definition striped table" id="resultFoundDepartmentTable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>
+                                    EBITDA Área
+                                </th>
+                                <th>
+                                    Margem Líquida Operacional Área
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody> </tbody>
+                    </table>
+                </div>
+
+                <div class="six wide column">
+                    <h3 class="ui dividing header">Bônus</h3>
+                    <table class="ui definition striped table" id="bonusTable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>
+                                    Múltiplo Remuneração
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody> </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h3 class="ui dividing header">Metas Financeiras</h3>
+            <table class="ui striped structured table" id="financialTargetsTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2"></th>
+                        <th colspan="3"> Peso </th>
+                        <th rowspan="2"> EBITDA MMA: </br> Resultado Apurado</th>
+                    </tr>
+                    <tr>
+                        <th> EBITDA MMA </th>
+                        <th> EBITDA Area </th>
+                        <th> Margem Líquida Operacional </th>
+                    </tr>
+                </thead>
+                <tbody> </tbody>
+            </table>
+
+            <div class="ui top attached tabular menu" id="financialLevelsMenu">
+            </div>
+
+            <div id="financialLevelsPanel">
+            </div>
+
+            <h3 class="ui dividing header">Metas Estratégicas</h3>
+
+            <h4 class="ui dividing header">NPS</h4>
+            <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Peso</label>
+                        <div class="ui input">
+                            <input type="text" id="strategicNpsWeight" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Resultado Apurado</label>
+                        <div class="ui input">
+                            <input type="text" id="strategicNpsResultFound" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table class="ui definition striped table" id="strategicNpsTable">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th> Faixa 1 </th>
+                        <th> Faixa 2 </th>
+                        <th> Faixa 3 </th>
+                        <th> Faixa 4 </th>
+                        <th> Faixa 5 </th>
+                    </tr>
+                </thead>
+                <tbody> </tbody>
+            </table>
+
+            <div class="ui top attached tabular menu" id="strategicLevelsEbitdaMenu">
+            </div>
+            <div id="strategicLevelsEbitdaPanel">
+            </div>
+
+            </br>
+            <div class="ui button primary" tabindex="0" onclick="save()">Salvar</div>
+        </form>
+    </div>
+
+    <script>
+
+        var configTarget = {}
+
+        $(document).ready(function () {
+            _loadProperties();
+        });
+
+        async function _loadProperties() {
+            try {
+                const responseTarget = await fetch('config-target.yml');
+                configTarget = jsyaml.load(await responseTarget.text());
+                console.log(configTarget);
+
+                _buildForm();
+
+                // Departamento: Resultado Aprovado
+                Object.keys(configTarget.target.department)
+                    .forEach(department => {
+                        $(`#ebitdaArea${department}`).val(configTarget.target.department[department].resultFound.ebitdaAREA);
+                        $(`#mloa${department}`).val(configTarget.target.department[department].resultFound.mloa);
+                    });
+
+
+                configTarget.target.levels
+                    .forEach(level => {
+
+                        let financialLevel = configTarget.target.financial[level.key]
+
+                        // Bonus
+                        for (let i = 0; i < Object.values(configTarget.target.bonus).length; i++) {
+                            $(`#bonus${[level.key]}`).val(configTarget.target.bonus[level.key]);
+                        }
+
+                        // Metas Financeiras
+                        for (let i = 0; i < financialLevel.tracks.length; i++) {
+                            $(`#weightEbitdaMMA${[level.key]}`).val(financialLevel.weight.ebitdaMMA);
+                            $(`#weightEbitdaArea${[level.key]}`).val(financialLevel.weight.ebitdaAREA);
+                            $(`#weightEbitdaMloa${[level.key]}`).val(financialLevel.weight.mloa);
+                            $(`#ebitdaMMA${[level.key]}`).val(financialLevel.resultFound.ebitdaMMA);
+                        }
+
+                        // Faixas
+                        for (let i = 0; i < financialLevel.tracks.length; i++) {
+                            $(`#trackValue${i + 1}${[level.key]}`).val(financialLevel.tracks[i].value);
+                            $(`#trackM${i + 1}${[level.key]}`).text(`${financialLevel.tracks[i].m}%`);
+                            $(`#trackH${i + 1}${[level.key]}`).text(`${financialLevel.tracks[i].h}%`);
+                        }
+
+                        let strategicLevel = configTarget.target.strategic.level[level.key]
+
+                        // Metas Estratégicas
+                        // Nível EBITDA
+                        _generateOtherValeus(strategicLevel.ebitda, true)
+                        strategicLevel.ebitda.forEach((item, i) => {
+                            $(`#strategicEbitdaTrackValue${i + 1}${level.key}`).val(item.value);
+                            $(`#strategicEbitdaTrackPercent${i + 1}${level.key}`).val(item.percent);
+                            $(`#strategicEbitdaTrackM${i + 1}${level.key}`).text(`${item.m ? item.m.toFixed(2) : 0}%`);
+                            $(`#strategicEbitdaTrackH${i + 1}${level.key}`).text(`${item.h ? item.h.toFixed(2) : 0}%`);
+                        });
+
+                        // Avaliações
+                        strategicLevel.evaluations.forEach((evaluation, i) => {
+                            $(`#strategicEvaluation${level.key}Description${i + 1}`).val(evaluation.description);
+                            $(`#strategicEvaluation${level.key}Weight${i + 1}`).val(evaluation.weight);
+                            for (let j = 0; j < evaluation.tracks.length; j++) {
+                                $(`#strategicEvaluation${i + 1}TrackValue${j + 1}${level.key}`).val(evaluation.tracks[j].value);
+                                $(`#strategicEvaluation${i + 1}TrackPercent${j + 1}${level.key}`).val(evaluation.tracks[j].percent);
+                            }
+                        });
+
+                    })
+
+                // Metas Estratégicas
+                // NPS
+                let nps = configTarget.target.strategic.nps
+                $(`#strategicNpsResultFound`).val(nps.resultFound);
+                $(`#strategicNpsWeight`).val(nps.weight);
+
+                // NPS - Faixas / Percentuais
+                _generateOtherValeus(nps.tracks);
+                for (let i = 0; i < nps.tracks.length; i++) {
+                    $(`#strategicNpsTrackValue${i + 1}`).val(nps.tracks[i].value);
+                    $(`#strategicNpsTrackPercent${i + 1}`).val(nps.tracks[i].percent);
+                    $(`#strategicNpsTrackM${i + 1}`).text(`${nps.tracks[i].m ? nps.tracks[i].m.toFixed(2) : 0}%`);
+                    $(`#strategicNpsTrackH${i + 1}`).text(`${nps.tracks[i].h ? nps.tracks[i].h.toFixed(2) : 0}%`);
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar o arquivo YAML:', error);
+            }
+        }
+
+        function _generateOtherValeus(array, isAllPercent = false) {
+            for (let i = 0; i < array.length; i++) {
+                if (i == 4) break;
+
+                array[i].m = (array[i].percent - array[i + 1].percent) / (array[i].value - array[i + 1].value);
+                if (isAllPercent) array[i].m = array[i].m * 100;
+
+                let toCalc = array[i].m;
+                if (isAllPercent) toCalc = toCalc / 100;
+                array[i].h = array[i].percent - (toCalc) * array[i].value;
+            }
+        }
+
+        function _buildForm() {
+
+            Object.values(configTarget.target.department)
+                .forEach(department => {
+                    $("#resultFoundDepartmentTable tbody").append(`
+                    <tr>
+                        <td> ${department.name} </td>
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="ebitdaArea${department.key}" placeholder="0"><i class="percent icon"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="mloa${department.key}" placeholder="0"><i class="percent icon"></i>
+                            </div>
+                        </td>
+                    </tr>`);
+                });
+
+
+            configTarget.target.levels
+                .forEach(level => {
+
+                    $("#bonusTable tbody").append(`
+                    <tr>
+                        <td> ${level.name} </td>
+                        <td>
+                            <input type="text" id="bonus${level.key}" placeholder="0">
+                        </td>
+                    </tr>`);
+
+                    $("#financialTargetsTable tbody").append(`
+                    <tr>
+                        <td> ${level.name} </td>
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="weightEbitdaMMA${level.key}" placeholder="0"><i class="percent icon"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="weightEbitdaArea${level.key}" placeholder="0"><i class="percent icon"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="weightEbitdaMloa${level.key}" placeholder="0"><i class="percent icon"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="ebitdaMMA${level.key}" placeholder="0"><i class="percent icon"></i>
+                            </div>
+                        </td>
+                    </tr>`);
+
+                    $("#financialLevelsMenu").append(`
+                        <a class="item ${level.key == "junior" ? "active" : ""}" data-tab="financialTab${level.key}">${level.name}</a>
+                    `);
+                    $("#financialLevelsPanel").append(`
+                        <div class="ui bottom attached tab segment ${level.key == "junior" ? "active" : ""}" data-tab="financialTab${level.key}">
+                            
+                            <table class="ui striped structured table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th> Faixa 1 </th>
+                                        <th> Faixa 2 </th>
+                                        <th> Faixa 3 </th>
+                                        <th> Faixa 4 </th>
+                                        <th> Faixa 5 </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td> Valor </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="trackValue1${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="trackValue2${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="trackValue3${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="trackValue4${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="trackValue5${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td> M </td>
+                                        <td><label id="trackM1${level.key}"></td>
+                                        <td><label id="trackM2${level.key}"></td>
+                                        <td><label id="trackM3${level.key}"></td>
+                                        <td><label id="trackM4${level.key}"></td>
+                                        <td><label id="trackM5${level.key}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td> H </td>
+                                        <td><label id="trackH1${level.key}"></td>
+                                        <td><label id="trackH2${level.key}"></td>
+                                        <td><label id="trackH3${level.key}"></td>
+                                        <td><label id="trackH4${level.key}"></td>
+                                        <td><label id="trackH5${level.key}"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>`);
+
+                    $("#strategicLevelsEbitdaMenu").append(`
+                        <a class="item ${level.key == "junior" ? "active" : ""}" data-tab="strategicEbitdaTab${level.key}">${level.name}</a>
+                    `);
+                    $("#strategicLevelsEbitdaPanel").append(`
+                        <div class="ui bottom attached tab segment ${level.key == "junior" ? "active" : ""}" data-tab="strategicEbitdaTab${level.key}">
+                            
+                            <h4 class="ui dividing header">EBITDA</h4>
+
+                            <table class="ui striped structured table compact-input">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th> Faixa 1 </th>
+                                        <th> Faixa 2 </th>
+                                        <th> Faixa 3 </th>
+                                        <th> Faixa 4 </th>
+                                        <th> Faixa 5 </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td> Nível EBITDA </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackValue1${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackValue2${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackValue3${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackValue4${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackValue5${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td> Percentual de ponderação gatilho </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackPercent1${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackPercent2${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackPercent3${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackPercent4${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEbitdaTrackPercent5${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td> M </td>
+                                        <td><label id="strategicEbitdaTrackM1${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackM2${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackM3${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackM4${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackM5${level.key}"></label></td>
+                                    </tr>
+                                    <tr>
+                                        <td> H </td>
+                                        <td><label id="strategicEbitdaTrackH1${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackH2${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackH3${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackH4${level.key}"></label></td>
+                                        <td><label id="strategicEbitdaTrackH5${level.key}"></label></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4 class="ui dividing header">Avaliações</h4>
+
+                            <table class="ui striped single line compact-input table" id="strategicLevelsEvaluationPanel${level.key}">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th> Descrição </th>
+                                        <th> Peso </th>
+                                        <th> Faixa 1 </th>
+                                        <th> Faixa 2 </th>
+                                        <th> Faixa 3 </th>
+                                        <th> Faixa 4 </th>
+                                        <th> Faixa 5 </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            </table>
+                        </div>`);
+
+                    configTarget.target.strategic.level[level.key].evaluations
+                        .forEach((evaluation, i) => {
+                            $(`#strategicLevelsEvaluationPanel${level.key}`).append(`
+                                <tr>
+                                    <td> Avaliação ${i + 1} </td>
+                                    <td> <input type="text" id="strategicEvaluation${level.key}Description${i + 1}" placeholder="0"> </td>
+                                    <td>
+                                        <div class="ui icon input">
+                                            <input type="text" id="strategicEvaluation${level.key}Weight${i + 1}" placeholder="0"><i class="percent icon"></i>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="field">
+                                            <label>Valor</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackValue1${level.key}" placeholder="0">
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <label>Percentual</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackPercent1${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="field">
+                                            <label>Valor</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackValue2${level.key}" placeholder="0">
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <label>Percentual</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackPercent2${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="field">
+                                            <label>Valor</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackValue3${level.key}" placeholder="0">
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <label>Percentual</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackPercent3${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="field">
+                                            <label>Valor</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackValue4${level.key}" placeholder="0">
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <label>Percentual</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackPercent4${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                         <div class="field">
+                                            <label>Valor</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackValue5${level.key}" placeholder="0">
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <label>Percentual</label>
+                                            <div class="ui icon input">
+                                                <input type="text" id="strategicEvaluation${i + 1}TrackPercent5${level.key}" placeholder="0"><i class="percent icon"></i>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>`);
+                        })
+
+                });
+
+            $("#strategicNpsTable tbody").append("<tr><td> Peso </td></tr>");
+            configTarget.target.strategic.nps.tracks
+                .forEach((item, i) => {
+                    $("#strategicNpsTable tbody tr:nth-of-type(1)").append(`
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="strategicNpsTrackValue${i + 1}" placeholder="0">
+                            </div>
+                        </td>`);
+                });
+            $("#strategicNpsTable tbody").append("<tr><td> Percentual </td></tr>");
+            configTarget.target.strategic.nps.tracks
+                .forEach((item, i) => {
+                    $("#strategicNpsTable tbody tr:nth-of-type(2)").append(`
+                        <td>
+                            <div class="ui icon input">
+                                <input type="text" id="strategicNpsTrackPercent${i + 1}" placeholder="0"><i class="percent icon"></i>
+                            </div>
+                        </td>`);
+                });
+
+            $("#strategicNpsTable tbody").append(`<tr><td> M </td></tr>`);
+            configTarget.target.strategic.nps.tracks
+                .forEach((item, i) => {
+                    $("#strategicNpsTable tbody tr:nth-of-type(3)").append(`<td><label id="strategicNpsTrackM${i + 1}"></label></td>`);
+                });
+
+            $("#strategicNpsTable tbody").append(`<tr><td> H </td></tr>`);
+            configTarget.target.strategic.nps.tracks
+                .forEach((item, i) => {
+                    $("#strategicNpsTable tbody tr:nth-of-type(4)").append(`<td><label id="strategicNpsTrackH${i + 1}"></label></td>`);
+                });
+
+            $('.menu .item').tab();
+        }
+
+        function save() {
+
+            Object.values(configTarget.target.department)
+                .forEach(department => {
+                    configTarget.target.department[department.key].resultFound.ebitdaAREA = parseFloat($(`#ebitdaArea${department.key}`).val());
+                    configTarget.target.department[department.key].resultFound.mloa = parseFloat($(`#mloa${department.key}`).val());
+                });
+
+            let bonus = configTarget.target.bonus;
+            configTarget.target.levels
+                .forEach(level => {
+                    bonus[level.key] = parseInt($(`#bonus${level.key}`).val());
+
+                    let weight = configTarget.target.financial[level.key].weight;
+                    weight.ebitdaMMA = parseFloat($(`#weightEbitdaMMA${level.key}`).val());
+                    weight.ebitdaAREA = parseFloat($(`#weightEbitdaArea${level.key}`).val());
+                    weight.mloa = parseFloat($(`#weightEbitdaMloa${level.key}`).val());
+
+                    let resultFound = configTarget.target.financial[level.key].resultFound;
+                    resultFound.ebitdaMMA = parseFloat($(`#ebitdaMMA${level.key}`).val());
+
+                    let tracks = configTarget.target.financial[level.key].tracks;
+                    for (let i = 0; i < tracks.length; i++) {
+                        tracks[i].value = parseFloat($(`#trackValue${i + 1}${level.key}`).val());
+                    }
+
+                    // Metas Estratégicas
+                    let strategicNpsTrack = configTarget.target.strategic.nps.tracks;
+                    for (let i = 0; i < strategicNpsTrack.length; i++) {
+                        strategicNpsTrack[i].value = parseFloat($(`#strategicNpsTrackValue${i + 1}`).val());
+                        strategicNpsTrack[i].percent = parseFloat($(`#strategicNpsTrackPercent${i + 1}`).val());
+                        delete strategicNpsTrack[i].m;
+                        delete strategicNpsTrack[i].h;
+                    }
+
+                    let strategicEbitdaTrack = configTarget.target.strategic.level[level.key].ebitda;
+                    for (let i = 0; i < strategicEbitdaTrack.length; i++) {
+                        strategicEbitdaTrack[i].value = parseFloat($(`#strategicEbitdaTrackValue${i + 1}${level.key}`).val());
+                        strategicEbitdaTrack[i].percent = parseFloat($(`#strategicEbitdaTrackPercent${i + 1}${level.key}`).val());
+                        delete strategicEbitdaTrack[i].m;
+                        delete strategicEbitdaTrack[i].h;
+                    }
+
+                    // Avaliações
+                    let evaluations = configTarget.target.strategic.level[level.key].evaluations;
+                    for (let i = 0; i < evaluations.length; i++) {
+                        evaluations[i].description = $(`#strategicEvaluation${level.key}Description${i + 1}`).val();
+                        evaluations[i].weight = parseFloat($(`#strategicEvaluation${level.key}Weight${i + 1}`).val());
+                        for (let j = 0; j < evaluations[i].tracks.length; j++) {
+                            evaluations[i].tracks[j].value = parseFloat($(`#strategicEvaluation${i + 1}TrackValue${j + 1}${level.key}`).val());
+                            evaluations[i].tracks[j].percent = parseFloat($(`#strategicEvaluation${i + 1}TrackPercent${j + 1}${level.key}`).val());
+                        }
+                    }
+                });
+
+            configTarget.target.strategic.nps.weight = parseFloat($(`#strategicNpsWeight`).val());
+            configTarget.target.strategic.nps.resultFound = parseFloat($(`#strategicNpsResultFound`).val());
+
+
+            downloadNewConfigFile();
+        }
+
+        async function downloadNewConfigFile() {
+            const newYml = jsyaml.dump(configTarget);
+            const handle = await window.showSaveFilePicker({
+                suggestedName: 'config-target.yml',
+                types: [{
+                    description: 'YAML Files',
+                    accept: { 'text/yaml': ['.yml', '.yaml'] }
+                }]
+            });
+
+            const writable = await handle.createWritable();
+            await writable.write(newYml);
+            await writable.close();
+        }
+    </script>
+</body>
+
+</html>

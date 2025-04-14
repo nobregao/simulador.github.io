@@ -26,6 +26,11 @@
             display: none;
         }
 
+        .red {
+            color: #db2828;
+            font-weight: bold;
+        }
+
         .margin-default {
             margin: 30px 0 !important;
         }
@@ -47,6 +52,14 @@
 
         <form class="ui form">
             <h4 class="ui dividing header">Área do Advogado</h4>
+
+            <label>
+                <i class="ui exclamation triangle icon yellow"></i>
+                Atenção: os campos com <span class="red">*</span> devem ser preenchidos
+            </label>
+            </br>
+            </br>
+
             <div class="field">
                 <div class="three fields">
                     <div class="field labeled required">
@@ -62,7 +75,7 @@
                     <div class="field required">
                         <label>Área de atuação</label>
                         <div class="ui selection dropdown">
-                            <input type="hidden" id="activity" onchange="validateDropdown(event)">
+                            <input type="hidden" id="department" onchange="validateDropdown(event)">
                             <i class="dropdown icon"></i>
                             <div class="default text">Selecione</div>
                             <div class="menu">
@@ -90,11 +103,15 @@
                     </div>
                 </div>
 
-                <div class="three fields">
+                <div class="three fields" id="panelEvaluation">
+                    <div class="ui dimmer">
+                        <div class="ui text loader">Carregando</div>
+                    </div>
+
                     <div class="field labeled required disabled">
                         <label id="evaluation1">Avaliação 1</label>
                         <div class="ui selection dropdown">
-                            <input type="hidden" id="evaluation1_value" onchange="validateDropdown(event);">
+                            <input type="hidden" id="evaluation1_value" onchange="validateDropdown(event, 'form');">
                             <i class="dropdown icon"></i>
                             <div class="default text">Selecione</div>
                             <div class="menu">
@@ -110,7 +127,7 @@
                     <div class="field labeled required disabled">
                         <label id="evaluation2">Avaliação 2</label>
                         <div class="ui selection dropdown">
-                            <input type="hidden" id="evaluation2_value" onchange="validateDropdown(event);">
+                            <input type="hidden" id="evaluation2_value" onchange="validateDropdown(event, 'form');">
                             <i class="dropdown icon"></i>
                             <div class="default text">Selecione</div>
                             <div class="menu">
@@ -126,7 +143,7 @@
                     <div class="field labeled required disabled">
                         <label id="evaluation3">Avaliação 3</label>
                         <div class="ui selection dropdown">
-                            <input type="hidden" id="evaluation3_value" onchange="validateDropdown(event);">
+                            <input type="hidden" id="evaluation3_value" onchange="validateDropdown(event, 'form');">
                             <i class="dropdown icon"></i>
                             <div class="default text">Selecione</div>
                             <div class="menu">
@@ -280,15 +297,7 @@
 
     <script>
 
-        var nps = 0;
-        var tracksNps = [];
-        var weight = {};
-        var tracks = {};
-        var resultFound = {};
-        var activities = {};
-        var bonus = {};
-        var tracksStrategicTargetEbitda = [];
-        var tracksStrategicTargets = {};
+        var configTarget = {};
 
         $(document).ready(function () {
             $('#sallary').maskMoney({ allowNegative: false, thousands: '.', decimal: ',' });
@@ -300,270 +309,53 @@
 
         async function _loadProperties() {
             try {
-                const response = await fetch('config.yml');
-                const yamlText = await response.text();
-
-                const config = jsyaml.load(yamlText);
-
-                // TODO: Carregar de arquivo externo
-                console.log("load file", config);
-
-                weight = {
-                    junior: {
-                        ebitdaMMA: 10,
-                        ebitdaAREA: 10,
-                        mloa: 10
-                    },
-                    pleno: {
-                        ebitdaMMA: 15,
-                        ebitdaAREA: 17.5,
-                        mloa: 17.5
-                    },
-                    senior: {
-                        ebitdaMMA: 20,
-                        ebitdaAREA: 30,
-                        mloa: 20
-                    },
-                    socio: {
-                        ebitdaMMA: 20,
-                        ebitdaAREA: 30,
-                        mloa: 20
-                    }
-                }
-
-                tracks = {
-                    junior: [
-                        { valor: 80, m: 150, h: -50 },
-                        { valor: 90, m: 150, h: -50 },
-                        { valor: 100, m: 200, h: -100 },
-                        { valor: 110, m: 200, h: -100 },
-                        { valor: 120, m: 0, h: 0 }
-                    ],
-                    pleno: [
-                        { valor: 80, m: 150, h: -50 },
-                        { valor: 90, m: 150, h: -50 },
-                        { valor: 100, m: 200, h: -100 },
-                        { valor: 110, m: 200, h: -100 },
-                        { valor: 120, m: 0, h: 0 }
-                    ],
-                    senior: [
-                        { valor: 80, m: 150, h: -50 },
-                        { valor: 90, m: 150, h: -50 },
-                        { valor: 100, m: 200, h: -100 },
-                        { valor: 110, m: 200, h: -100 },
-                        { valor: 120, m: 0, h: 0 }
-                    ],
-                    socio: [
-                        { valor: 80, m: 75, h: 2.50 },
-                        { valor: 90, m: 300, h: -200 },
-                        { valor: 100, m: 150, h: -50 },
-                        { valor: 110, m: 100, h: -5 },
-                        { valor: 120, m: 0, h: 0 }
-                    ]
-                };
-
-                resultFound = {
-                    ebitdaMMA: 100,
-                    ebitdaAREA: 100,
-                    mloa: 100 // Margem Liquida Operacional Área
-                };
-
-                activities = {
-                    civel: {
-                        ebitdaMMA: 100,
-                        ebitdaAREA: 100,
-                        mloa: 100
-                    },
-                    societario: {
-                        ebitdaMMA: 100,
-                        ebitdaAREA: 100,
-                        mloa: 100
-                    },
-                    tributario: {
-                        ebitdaMMA: 100,
-                        ebitdaAREA: 100,
-                        mloa: 100
-                    },
-                    trabalhista: {
-                        ebitdaMMA: 100,
-                        ebitdaAREA: 100,
-                        mloa: 100
-                    }
-                }
-
-                bonus = {
-                    junior: 3,
-                    pleno: 4,
-                    senior: 5,
-                    socio: 6
-                }
-
-                nps = {
-                    resultFound: 5,
-                    weight: 5
-                };
-
-                tracksNps = [{ valor: 1, percent: 0 },
-                { valor: 2, percent: 5 },
-                { valor: 3, percent: 10 },
-                { valor: 4, percent: 50 },
-                { valor: 5, percent: 100 }];
-
-                _generateOtherValeus(tracksNps);
-
-                tracksStrategicTargetEbitda = [{ valor: 40, percent: 37.5 },
-                { valor: 50, percent: 47.5 },
-                { valor: 60, percent: 65 },
-                { valor: 80, percent: 75 },
-                { valor: 100, percent: 100 }];
-
-                _generateOtherValeus(tracksStrategicTargetEbitda);
-
-                tracksStrategicTargets = {
-                    junior: {
-                        evaluation: [{
-                            description: "Comunicação com o cliente",
-                            weight: 27.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Gestão de resposta ao cliente",
-                            weight: 27.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Construção de autoridade",
-                            weight: 10, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 0 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }],
-                    },
-                    pleno: {
-                        evaluation: [{
-                            description: "Gestão de resposta ao cliente",
-                            weight: 17.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Comunicação escrita",
-                            weight: 17.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Construção de autoridade",
-                            weight: 10, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 0 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }],
-                    },
-                    senior: {
-                        evaluation: [{
-                            description: "Inovação em soluções jurídicas",
-                            weight: 7.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Excelência no atendimento ao cliente e relacionamento",
-                            weight: 7.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Construção de autoridade",
-                            weight: 10, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 0 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }],
-                    },
-                    socio: {
-                        evaluation: [{
-                            description: "Contribuição técnica e Gestão da Qualidade",
-                            weight: 7.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Gestão de Pessoas e Desenvolvimento de Equipes",
-                            weight: 7.5, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 10 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }, {
-                            description: "Construção de autoridade",
-                            weight: 10, resultFound: 3,
-                            tracks: [
-                                { valor: 1, percent: 0 },
-                                { valor: 2, percent: 0 },
-                                { valor: 3, percent: 100 },
-                                { valor: 4, percent: 110 },
-                                { valor: 5, percent: 120 }
-                            ]
-                        }],
-                    }
-                }
-
+                const responseTarget = await fetch('admin/config-target.yml');
+                configTarget = jsyaml.load(await responseTarget.text());
+                console.log({ configTarget });
+                _init();
             } catch (error) {
-                console.error('Erro ao carregar o arquivo YAML:', error);
+                alert("Erro ao carregar o arquivo de configuração");
+                console.error('Erro ao carregar o arquivo de configuração:', error);
             }
         }
+
+
+
+
+
+
+
+
+
+
+        // TODO: REMOVER
+        function _init() {
+            $("#sallary").val("7.000,00");
+
+            $($("#department").parent()).dropdown('set selected', "civel");
+            $($("#level").parent()).dropdown('set selected', "pleno");
+
+            $($("#evaluation1_value").parent()).dropdown('set selected', "1");
+            $($("#evaluation2_value").parent()).dropdown('set selected', "2");
+            $($("#evaluation3_value").parent()).dropdown('set selected', "3");
+
+            $(".ui.button").click();
+        }
+
+
+
+
+
+
+
+
+
 
         function _generateOtherValeus(array) {
             for (let i = 0; i < array.length; i++) {
                 if (i == 4) break;
-                array[i].m = (array[i].percent - array[i + 1].percent) / (array[i].valor - array[i + 1].valor);
-                array[i].h = array[i].percent - (array[i].m * array[i].valor);
+                array[i].m = (array[i].percent - array[i + 1].percent) / (array[i].value - array[i + 1].value);
+                array[i].h = array[i].percent - (array[i].m * array[i].value);
             }
         }
 
@@ -579,10 +371,10 @@
             }
         }
 
-        function validateDropdown(event) {
+        function validateDropdown(event, trigger) {
             const field = event.target;
 
-            if (event.target.value == "") {
+            if (event.target.value == "" && trigger != "form") {
                 $(field).parent().parent().addClass("error");
             } else {
                 $(field).parent().parent().removeClass("error");
@@ -592,35 +384,42 @@
         function loadFieldsEvaluation() {
 
             if ($("#level").val() != "") {
-                const activity = $("#activity").val();
-                const level = $("#level").val();
-                const levelTrack = tracks[level];
+                $('#panelEvaluation .dimmer').dimmer('show');
 
-                let evaluations = tracksStrategicTargets[level].evaluation;
+                const level = $("#level").val();
+
+                const evaluations = configTarget.target.strategic.level[level].evaluations;
 
                 $("#evaluation1").text(evaluations[0].description);
                 $("#evaluation2").text(evaluations[1].description);
                 $("#evaluation3").text(evaluations[2].description);
 
+                $($("#evaluation1_value").parent()).dropdown('clear');
+                $($("#evaluation2_value").parent()).dropdown('clear');
+                $($("#evaluation3_value").parent()).dropdown('clear');
+
                 $(".field.required.disabled").removeClass("disabled");
+                $('#panelEvaluation .dimmer').dimmer('hide');
             }
 
         }
 
-        function validateFilledFields() {
+        function validateFilledFields(trigger) {
             let valid = true;
 
-            $(".field.required").each(function () {
-                const input = $(this).find("input[type='hidden'], input[type='text']");
-                const value = input.val()?.trim();
+            if (trigger === 'submit') {
+                $(".field.required").each(function () {
+                    const input = $(this).find("input[type='hidden'], input[type='text']");
+                    const value = input.val()?.trim();
 
-                if (!value) {
-                    $(this).addClass("error");
-                    valid = false;
-                } else {
-                    $(this).removeClass("error");
-                }
-            });
+                    if (!value) {
+                        $(this).addClass("error");
+                        valid = false;
+                    } else {
+                        $(this).removeClass("error");
+                    }
+                });
+            }
 
             if (!valid) {
                 alert("Preencha todos os campos obrigatórios.");
@@ -630,7 +429,7 @@
         }
 
         function calculate() {
-            let isFormValid = validateFilledFields();
+            let isFormValid = validateFilledFields('submit');
 
             if (isFormValid) {
                 $('#result').removeClass('hide');
@@ -651,7 +450,7 @@
                 const actualTrack = track[i];
                 const nextTrack = track[i + 1];
 
-                if (value >= actualTrack.valor && value <= nextTrack.valor) {
+                if (value >= actualTrack.value && value <= nextTrack.value) {
                     result = actualTrack.m / 100 * value / 100 + actualTrack.h / 100;
                     break;
                 }
@@ -660,6 +459,7 @@
             return result;
         }
 
+        // TODO: refatorar para usar a função `_calculateTrackRange(value, track)`
         function _calculateNpsTrack(value, track) {
             let result = 0;
 
@@ -667,7 +467,7 @@
                 const actualTrack = track[i];
                 const nextTrack = track[i + 1];
 
-                if (value >= actualTrack.valor && value <= nextTrack.valor) {
+                if (value >= actualTrack.value && value <= nextTrack.value) {
                     result = actualTrack.m * value + actualTrack.h;
                     break;
                 }
@@ -678,35 +478,40 @@
 
         function calculateFinancialTarget() {
 
-            $("#ebitdaMMA").html(`${resultFound.ebitdaMMA}%`);
-            $("#ebitdaAREA").html(`${resultFound.ebitdaAREA}%`);
-            $("#mloa").html(`${resultFound.mloa}%`);
+            const departmentSelected = $("#department").val();
+            const levelSelected = $("#level").val();
 
-            const activity = $("#activity").val();
-            const level = $("#level").val();
-            const levelTrack = tracks[level];
+            const levelConfig = configTarget.target.financial[levelSelected];
+
+            const ebitdaMMA = levelConfig.resultFound.ebitdaMMA;
+            $("#ebitdaMMA").html(`${ebitdaMMA}%`);
+
+            // TODO: refactory
+            const departmentResultFound = configTarget.target.department[departmentSelected].resultFound;
+            $("#ebitdaAREA").html(`${departmentResultFound.ebitdaAREA}%`);
+            $("#mloa").html(`${departmentResultFound.mloa}%`);
 
             const performance = {
-                ebitdaMMA: _calculateTrackRange(resultFound.ebitdaMMA, levelTrack),
-                ebitdaAREA: _calculateTrackRange(resultFound.ebitdaAREA, levelTrack),
-                mloa: _calculateTrackRange(resultFound.mloa, levelTrack)
+                ebitdaMMA: _calculateTrackRange(ebitdaMMA, levelConfig.tracks),
+                ebitdaAREA: _calculateTrackRange(departmentResultFound.ebitdaAREA, levelConfig.tracks),
+                mloa: _calculateTrackRange(departmentResultFound.mloa, levelConfig.tracks)
             }
 
             const resultCalculated = {
                 ebitdaMMA: {
-                    resultFound: resultFound.ebitdaMMA,
+                    resultFound: ebitdaMMA,
                     performanceRange: formatTotal(performance.ebitdaMMA),
-                    performanceIndicator: formatTotal(performance.ebitdaMMA * weight[level].ebitdaMMA / 100)
+                    performanceIndicator: formatTotal(performance.ebitdaMMA * levelConfig.weight.ebitdaMMA / 100)
                 },
                 ebitdaAREA: {
-                    resultFound: resultFound.ebitdaAREA,
+                    resultFound: departmentResultFound.ebitdaAREA,
                     performanceRange: formatTotal(performance.ebitdaAREA),
-                    performanceIndicator: formatTotal(performance.ebitdaAREA * weight[level].ebitdaAREA / 100),
+                    performanceIndicator: formatTotal(performance.ebitdaAREA * levelConfig.weight.ebitdaAREA / 100),
                 },
                 mloa: {
-                    resultFound: resultFound.mloa,
+                    resultFound: departmentResultFound.mloa,
                     performanceRange: formatTotal(performance.mloa),
-                    performanceIndicator: formatTotal(performance.mloa * weight[level].mloa / 100)
+                    performanceIndicator: formatTotal(performance.mloa * levelConfig.weight.mloa / 100)
                 }
             }
 
@@ -736,7 +541,7 @@
             $("#finalIndicatorFinancial").html(`${formatTotal(total)}%`);
 
             const sallary = parseFloat($("#sallary").val().replace(/\./g, '').replace(',', '.'));
-            const bonusValue = bonus[level];
+            const bonusValue = configTarget.target.bonus[levelSelected];
             const totalResult = total * sallary * bonusValue;
             $("#totalResultFinancial").html(formatCurrency(totalResult));
 
@@ -745,15 +550,25 @@
 
         function calculateStrategicTarget() {
 
-            let totalNps = _calculateNpsTrack(nps.resultFound, tracksNps);
+            const levelSelected = $("#level").val();
 
-            const resultEbitda = _calculateNpsTrack(resultFound.ebitdaMMA, tracksStrategicTargetEbitda);
+            const nps = configTarget.target.strategic.nps;
+            _generateOtherValeus(nps.tracks);
+
+            let totalNps = _calculateNpsTrack(nps.resultFound, nps.tracks);
+
+            let tracksEbitdaByLevel = configTarget.target.strategic.level[levelSelected].ebitda;
+            _generateOtherValeus(tracksEbitdaByLevel)
+
+            // EBITDA (meta estratégica) == EBITDA MMA (meta financeira)
+            const ebitda = configTarget.target.financial[levelSelected].resultFound.ebitdaMMA;
+            const resultEbitda = _calculateNpsTrack(ebitda, tracksEbitdaByLevel);
 
             var tbody = $("#nps tbody");
             $(tbody).html(`
             <tr>
                 <td>Nível EBITDA</td>
-                <td>${resultFound.ebitdaMMA}%</td>
+                <td>${ebitda}%</td>
                 <td>${resultEbitda}%</td>
                 <td>-</td>
             </tr>
@@ -764,22 +579,21 @@
                 <td>${(totalNps * nps.weight) / 100}%</td>
             </tr>`);
 
-            const level = $("#level").val();
-            tracksStrategicTargets[level].evaluation[0].resultFound = parseInt($("#evaluation1_value").val());
-            tracksStrategicTargets[level].evaluation[1].resultFound = parseInt($("#evaluation2_value").val());
-            tracksStrategicTargets[level].evaluation[2].resultFound = parseInt($("#evaluation3_value").val());
 
-            const levels = $($("#level").parent().children()[3]).children().toArray().map(item => $(item).attr("data-value"));
-            levels.forEach(level => {
-                tracksStrategicTargets[level].evaluation.forEach(evaluation => {
-                    _generateOtherValeus(evaluation.tracks);
-                });
-            });
-
-            let evaluationsByLevel = tracksStrategicTargets[$("#level").val()].evaluation;
+            let evaluations = configTarget.target.strategic.level[levelSelected].evaluations;
+            let evaluationsResultFoundFilled = [
+                parseInt($("#evaluation1_value").val()),
+                parseInt($("#evaluation2_value").val()),
+                parseInt($("#evaluation3_value").val())];
 
             let total = nps.resultFound;
-            evaluationsByLevel.forEach(evaluation => {
+
+            for (let i = 0; i < evaluations.length; i++) {
+                let evaluation = evaluations[i];
+
+                evaluation.resultFound = evaluationsResultFoundFilled[i];
+                _generateOtherValeus(evaluation.tracks);
+
                 const resultFound = evaluation.resultFound;
                 const performanceRange = _calculateNpsTrack(resultFound, evaluation.tracks);
                 const performanceIndicator = (performanceRange * evaluation.weight) / 100;
@@ -793,12 +607,12 @@
                     <td>${performanceRange}%</td>
                     <td>${performanceIndicator}%</td>
                 </tr>`);
-            });
+            }
 
             $("#finalIndicatorStrategic").html(`${total}%`);
 
             const sallary = parseFloat($("#sallary").val().replace(/\./g, '').replace(',', '.'));
-            const bonusValue = bonus[level];
+            const bonusValue = configTarget.target.bonus[levelSelected];
 
             const totalResult = sallary * bonusValue * resultEbitda / 100 * total / 100;
             $("#totalResultStrategic").html(formatCurrency(totalResult));
